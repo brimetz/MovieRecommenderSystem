@@ -19,6 +19,3 @@ streamlit run app.py
 
 ### Author
 Baptiste Rimetz
-
-Recommandation Engine project base on the MovieLens dataset
-Two approaches: Collaborative filtering (SVD) and content filtering (genres + cosine similarity)
