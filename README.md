@@ -16,6 +16,8 @@ Use the MovieLens 100k dataset ('u.data' and 'u.item')
 pip install -r requirements.txt
 streamlit run app.py
 ```
+or link
+```https://brz-movie-recommender.streamlit.app/```
 
 ### Author
 Baptiste Rimetz
