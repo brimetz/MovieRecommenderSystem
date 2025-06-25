@@ -19,6 +19,9 @@ def recommend_similar_movies(film_title, movie_genres, genre_columns, top_n=5):
 def recommend_by_user_ratings(film_title, user_movie_matrix, ratings, min_ratings=50, top_n=5):
     # Get the column of the selected movie
     target_ratings = user_movie_matrix[film_title]
+    
+    # Remove the Current film selected
+    user_movie_matrix = user_movie_matrix.drop(columns=[film_title])
 
     # compute the correlation with other movies
     similar_scores = user_movie_matrix.corrwith(target_ratings)
