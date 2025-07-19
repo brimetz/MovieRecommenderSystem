@@ -197,7 +197,7 @@ def evaluate_model(predict_fn, test_df, train_matrix):
 
     return rmse, mae
 
-def get_top_n_recommendations(user_id, ratings_matrix, similarity_matrix, k=5, N=10):
+def get_top_n_recommendations_knn(user_id, ratings_matrix, similarity_matrix, k=5, N=10):
     # Récupérer les films non notés par l'utilisateur
     user_ratings = ratings_matrix.loc[user_id]
     unseen_movies = user_ratings[user_ratings.isna()].index
