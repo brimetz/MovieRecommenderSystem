@@ -1,13 +1,16 @@
 import streamlit as st
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from src.reco import recommend_similar_movies, recommend_by_user_ratings
 from src.data_preprocessing import load_data, GENRE_COLUMNS, compute_item_similarity_matrix
 from src.collaborative_filtering import get_similar_movies_cosine, get_top_n_recommendations_knn
 from src.svd_recommender import train_svd_model, get_top_n_recommendations_svd
+from src.content_based_reco import get_nlp_content_based_recommendations, merge_movies_overviews, load_content_based_data
 
 import streamlit as st
+import joblib
 
 st.set_page_config(page_title="Reco de Films", page_icon="🎬")
 st.markdown("""
@@ -17,6 +20,7 @@ Recommande des films par **genres**, **notes d'utilisateurs** ou via **KNN**
 """)
 
 movie_genres, ratings, user_movie_matrix, movies = load_data()
+
 
 # Calcul matrice de similarité (item-item) — tu peux le faire une fois au chargement
 similarity_matrix = compute_item_similarity_matrix(user_movie_matrix)
@@ -29,6 +33,20 @@ st.sidebar.markdown("### 🔧 Paramètres de la recommandation")
 k = st.sidebar.slider("Nombre de voisins (k for KNN)", min_value=1, max_value=50, value=5, step=1)
 N = st.sidebar.slider("Nombre de recommandations", min_value=1, max_value=20, value=10, step=1)
 
+
+# Charger les fichiers nécessaires
+df_nlp_movies = load_content_based_data()
+df_nlp_overviews = pd.read_csv("data/movie_overviews_sample.csv")
+print(df_nlp_movies.columns)
+print(df_nlp_overviews.columns)
+# Fusionner les deux datasets sur le titre
+df_nlp = merge_movies_overviews(df_nlp_movies, df_nlp_overviews)
+
+tfidf = TfidfVectorizer(stop_words="english")
+tfidf_matrix = tfidf.fit_transform(df_nlp["text_features"])
+
+cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+
 # === Interface Streamlit ===
 col1, col2 = st.columns(2)
 with col1:
@@ -36,14 +54,16 @@ with col1:
 with col2:
     mode = st.radio(
         "Mode :", 
-        ["Par genres", "Par utilisateurs (Pearson)", "Par utilisateurs (Cosine)", "KNN item-item", "SVD"])
+        ["Par genres", "Par utilisateurs (Pearson)", "Par utilisateurs (Cosine)", "KNN item-item", "SVD", "Content-Based (NLP)"])
 
 user_id = None
 if mode == "KNN item-item" or mode == "SVD":
     user_id = st.number_input("Entrez votre ID utilisateur", min_value=int(ratings["user_id"].min()), max_value=int(ratings["user_id"].max()), value=int(ratings["user_id"].min()))
 
 if st.button("Recommander des films similaires"):
-    if mode == "Par genres":
+    if mode == "Content-Based (NLP)":
+        reco = get_nlp_content_based_recommendations(film_title, cosine_sim, df_nlp)
+    elif mode == "Par genres":
         reco = recommend_similar_movies(film_title, movie_genres, GENRE_COLUMNS, N)
     elif mode == "Par utilisateurs (Pearson)":
         reco = recommend_by_user_ratings(film_title, user_movie_matrix, ratings, 50, N)
@@ -80,6 +100,10 @@ if st.button("Recommander des films similaires"):
                 note = row["predicted_rating"]
                 stars = "⭐" * int(round(note))
                 st.markdown(f"**{i+1}. {row['Film recommandé']}** — {note}/5 {stars}")
+        elif mode == "Content-Based (NLP)":
+            st.subheader("Films similaires recommandés :")
+            for i, row in reco.iterrows():
+                st.markdown(f"**{i+1}. {row['title']}** — Similarité : {row['Score de similarité']}")
         else:
             # Arrondir la similarité/corrélation
             if "similarity" in reco.columns:

@@ -39,3 +39,4 @@ def recommend_by_user_ratings(film_title, user_movie_matrix, ratings, min_rating
 
     # Top recommandations
     return filtered_corr.sort_values(by="correlation", ascending=False).head(top_n).reset_index()
+
