@@ -1,5 +1,7 @@
-pandas
-scikit-learn
 streamlit
-seaborn
-matplotlib
+pandas
+numpy
+scikit-learn
+scipy
+scikit-surprise
+requests
