@@ -24,15 +24,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential  
 
-      - name: Install numpy and cython first
+      - name: Install pip
         run: |
           python -m pip install --upgrade pip
+
+      - name: Install scikit-surprise (wheel if available)
+        run: |
           pip install numpy
           pip install cython
-
-      - name: Install scikit-surprise from source
-        run: |
-          pip install scikit-surprise --no-binary :all:
+          pip install scikit-surprise==1.1.4
 
       - name: Install project dependencies
         run: |
