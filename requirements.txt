@@ -3,7 +3,8 @@ pandas
 numpy
 scikit-learn
 scipy
-scikit-surprise
 requests
 pytest
 flake8
+
+# scikit-surprise must be installed manually AFTER numpy — see ci.yml
