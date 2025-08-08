@@ -1,8 +1,15 @@
 # MovieRecommenderSystem
 
+![Python](https://img.shields.io/badge/python-3.10-blue.svg)
+![Streamlit](https://img.shields.io/badge/streamlit-v1.0-orange)
+![Build Status](https://img.shields.io/github/actions/workflow/status/<GITHUB_USERNAME>/<REPO_NAME>/pytest.yml?branch=main)
+![Coverage](https://img.shields.io/codecov/c/github/<GITHUB_USERNAME>/<REPO_NAME>?branch=main)
+
 # 🎬 Movie Recommender
-Web application build with **Python** and **Streamlit**.
-The goal was to explore some recommandation system and increase my familiarity in python
+A **Streamlit** web application built in **Python** for movie recommendation.  
+This project explores both **content-based filtering** (genre similarity) and **collaborative filtering** (user ratings) techniques, leveraging popular algorithms such as Pearson correlation and Cosine similarity.  
+
+Designed to be a hands-on learning experience, it demonstrates key concepts in recommendation systems and provides an intuitive interface for users to discover movies tailored to their preferences.
 
 ## 🔍 Functionalities
 - Recommendation based on movie **genre** (content-based)
@@ -20,8 +27,12 @@ https://grouplens.org/datasets/movielens/100k/
 pip install -r requirements.txt
 streamlit run app.py
 ```
-or link
+Or access the live app here:
 ```https://brz-movie-recommender.streamlit.app/```
+
+## Run Tests
+Run the automated tests using:
+python -m pytest tests/
 
 ### Author
 Baptiste Rimetz
