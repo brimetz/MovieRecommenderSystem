@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-v1.0-orange)
-![Build Status](https://img.shields.io/github/actions/workflow/status/brimetz/MovieRecommenderSystem/actions/workflows/ci.yml?branch=main)
+![Build](https://github.com/brimetz/MovieRecommenderSystem/actions/workflows/python-tests.yml/badge.svg)
 [![Codecov](https://codecov.io/gh/brimetz/MovieRecommenderSystem/branch/main/graph/badge.svg?token=TOKEN)](https://codecov.io/gh/brimetz/MovieRecommenderSystem)
 ![Lint](https://github.com/brimetz/MovieRecommenderSystem/actions/workflows/lint.yml/badge.svg)
 
