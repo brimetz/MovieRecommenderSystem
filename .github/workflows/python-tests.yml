@@ -18,9 +18,17 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
-          python -m pip install --upgrade pip
+          sudo apt-get update
+          sudo apt-get install -y build-essential  
+
+      - name: Install scikit-surprise (wheel if available)
+        run: |
+          pip install --upgrade pip
+          pip install "numpy<2"
+          pip install cython
+          pip install scikit-surprise==1.1.4
           pip install -r requirements.txt
 
       - name: Run tests with pytest
