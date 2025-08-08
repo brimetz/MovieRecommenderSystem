@@ -6,5 +6,6 @@ scipy
 requests
 pytest
 flake8
+pytest-cov
 
 # scikit-surprise must be installed manually AFTER numpy — see ci.yml

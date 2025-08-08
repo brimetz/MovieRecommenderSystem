@@ -33,4 +33,10 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          python -m pytest --maxfail=1 --disable-warnings -q
+          python -m pytest --cov=./ --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}  # à configurer dans ton repo GitHub Secrets
+          files: ./coverage.xml
