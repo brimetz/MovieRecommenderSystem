@@ -2,8 +2,9 @@
 
 ![Python](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-v1.0-orange)
-![Build Status](https://img.shields.io/github/actions/workflow/status/<GITHUB_USERNAME>/<REPO_NAME>/pytest.yml?branch=main)
-![Coverage](https://img.shields.io/codecov/c/github/<GITHUB_USERNAME>/<REPO_NAME>?branch=main)
+![Build Status](https://img.shields.io/github/actions/workflow/status/<brimetz>/<MovieRecommenderSystem>/pytest.yml?branch=main)
+![Coverage](https://img.shields.io/codecov/c/github/<brimetz>/<MovieRecommenderSystem>?branch=main)
+![Lint](https://github.com/brimetz/MovieRecommenderSystem/actions/workflows/lint.yml/badge.svg)
 
 # 🎬 Movie Recommender
 A **Streamlit** web application built in **Python** for movie recommendation.  
