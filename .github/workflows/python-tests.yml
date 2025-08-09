@@ -29,7 +29,7 @@ jobs:
           pip install "numpy<2"
           pip install cython
           pip install scikit-surprise==1.1.4
-          pip install -r requirements.txt
+          pip install -r requirements-ci.txt
 
       - name: Run tests with pytest
         run: |
