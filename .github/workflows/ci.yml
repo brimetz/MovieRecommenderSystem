@@ -24,13 +24,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential  
 
-      - name: Install scikit-surprise (wheel if available)
+      - name: Install pip, numpy and cython
         run: |
           pip install --upgrade pip
           pip install "numpy<2"
           pip install cython
+
+      - name: Install scikit-surprise
+        run: |
           pip install scikit-surprise==1.1.4
-          pip install -r requirements.txt
+
+      - name: Install requirements-ci.txt
+        run: |
+          pip install -r requirements-ci.txt
 
       - name: Lint with flake8
         run: |
