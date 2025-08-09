@@ -43,5 +43,6 @@ def recommend_by_user_ratings(
     filtered_corr = corr_df[corr_df["num_ratings"] >= min_ratings]
 
     filtered_corr = filtered_corr.sort_values(by="correlation", ascending=False)
+    filtered_corr = filtered_corr[filtered_corr.index != film_title]
     # Top recommandations
     return filtered_corr.head(top_n).reset_index()
