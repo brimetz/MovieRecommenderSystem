@@ -3,11 +3,27 @@ import streamlit as st
 
 
 # Colonnes de genres utilisées
-GENRE_COLUMNS = ["unkown", "Action", "Adventure", "Animation",
-                 "Children's", "Comedy", "Crime",
-                 "Documentary", "Drama", "Fantasy", "Film-Noir",
-                 "Horror", "Musical", "Mystery",
-                 "Romance", "Sci-Fi", "Thriller", "War", "Western"]
+GENRE_COLUMNS = [
+    "unkown",
+    "Action",
+    "Adventure",
+    "Animation",
+    "Children's",
+    "Comedy",
+    "Crime",
+    "Documentary",
+    "Drama",
+    "Fantasy",
+    "Film-Noir",
+    "Horror",
+    "Musical",
+    "Mystery",
+    "Romance",
+    "Sci-Fi",
+    "Thriller",
+    "War",
+    "Western",
+]
 
 
 @st.cache_data
@@ -17,8 +33,8 @@ def load_movies(path="data/u.item"):
         sep="|",
         encoding="latin-1",
         header=None,
-        names=["movie_id", "title", "release_date",
-               "video_release_date", "IMDb_URL"] + GENRE_COLUMNS
+        names=["movie_id", "title", "release_date", "video_release_date", "IMDb_URL"]
+        + GENRE_COLUMNS,
     )
     return movies
 
@@ -26,9 +42,7 @@ def load_movies(path="data/u.item"):
 @st.cache_data
 def load_ratings(path="data/u.data"):
     ratings = pd.read_csv(
-        path,
-        sep="\t",
-        names=["user_id", "movie_id", "rating", "timestamp"]
+        path, sep="\t", names=["user_id", "movie_id", "rating", "timestamp"]
     )
     return ratings
 
@@ -44,8 +58,7 @@ def merge_ratings_with_titles(ratings_df, movies_df):
 
 @st.cache_data
 def get_user_movie_matrix(ratings_df):
-    return ratings_df.pivot_table(index="user_id",
-                                  columns="title", values="rating")
+    return ratings_df.pivot_table(index="user_id", columns="title", values="rating")
 
 
 @st.cache_data

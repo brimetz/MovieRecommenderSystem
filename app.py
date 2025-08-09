@@ -5,9 +5,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from src.reco import recommend_similar_movies, recommend_by_user_ratings
 from src.data_preprocessing import (
-                load_data,
-                GENRE_COLUMNS,
-                compute_item_similarity_matrix)
+    load_data,
+    GENRE_COLUMNS,
+    compute_item_similarity_matrix)
 from src.collaborative_filtering import (
     get_similar_movies_cosine,
     get_top_n_recommendations_knn)

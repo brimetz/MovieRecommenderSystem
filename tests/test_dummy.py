@@ -11,51 +11,52 @@ import numpy as np
 #                       get_similar_movies_cosine,
 #                       get_top_n_recommendations_knn)
 from src.svd_recommender import train_svd_model, get_top_n_recommendations_svd
+
 # from src.content_based_reco import (
 #                       get_nlp_content_based_recommendations,
 #                       merge_movies_overviews,
 #                       load_content_based_data)
 from src.content_based_reco import get_nlp_content_based_recommendations
+
 # uncommented import when we will add more tests
 
 
 def test_basic_math():
-    assert 1+1 == 2
+    assert 1 + 1 == 2
 
 
 # Ajouter le dossier parent au path
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "..")))
 
 
 def test_content_recommendation():
-    df = pd.DataFrame({
-        'title': ['Toy Story (1995)', 'Jumanji (1995)'],
-        'title_norm': ['toy story (1995)', 'jumanji (1995)'],
-        'text_features': ['toy story adventure', 'jumanji adventure']
-    })
+    df = pd.DataFrame(
+        {
+            "title": ["Toy Story (1995)", "Jumanji (1995)"],
+            "title_norm": ["toy story (1995)", "jumanji (1995)"],
+            "text_features": ["toy story adventure", "jumanji adventure"],
+        }
+    )
     matrix = np.identity(2)
-    result = get_nlp_content_based_recommendations('Toy Story (1995)',
-                                                   matrix, df, top_n=1)
+    result = get_nlp_content_based_recommendations(
+        "Toy Story (1995)", matrix, df, top_n=1
+    )
     print(len(result))
     assert len(result) == 1
 
 
 def test_train_svd_model():
-    dummy_data = pd.DataFrame({
-        'user_id': [1, 2, 3],
-        'movie_id': [10, 20, 30],
-        'rating': [4.0, 5.0, 3.0]
-    })
+    dummy_data = pd.DataFrame(
+        {"user_id": [1, 2, 3], "movie_id": [10, 20, 30], "rating": [4.0, 5.0, 3.0]}
+    )
     model = train_svd_model(dummy_data)
     assert model is not None
 
 
 def test_get_recommendations():
-    dummy_data = pd.DataFrame({
-        'user_id': [1, 2, 3],
-        'movie_id': [10, 20, 30],
-        'rating': [4.0, 5.0, 3.0]
-    })
+    dummy_data = pd.DataFrame(
+        {"user_id": [1, 2, 3], "movie_id": [10, 20, 30], "rating": [4.0, 5.0, 3.0]}
+    )
 
     # Entraîne le modèle
     svd_model = train_svd_model(dummy_data)
@@ -64,8 +65,7 @@ def test_get_recommendations():
     user_id = 1
 
     # Appel de la fonction avec tous les arguments nécessaires
-    recommendations = get_top_n_recommendations_svd(user_id,
-                                                    dummy_data, svd_model)
+    recommendations = get_top_n_recommendations_svd(user_id, dummy_data, svd_model)
 
     # Assertions
     assert isinstance(recommendations, pd.DataFrame)

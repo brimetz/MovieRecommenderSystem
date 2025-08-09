@@ -6,8 +6,7 @@ import streamlit as st
 @st.cache_resource
 def train_svd_model(ratings_df):
     reader = Reader(rating_scale=(1, 5))
-    data = Dataset.load_from_df(ratings_df[["user_id",
-                                            "movie_id", "rating"]], reader)
+    data = Dataset.load_from_df(ratings_df[["user_id", "movie_id", "rating"]], reader)
     trainset = data.build_full_trainset()
 
     svd = SVD()
@@ -22,8 +21,7 @@ def get_top_n_recommendations_svd(user_id, ratings_df, svd_model, top_n=10):
     unseen = [movie for movie in all_movies if movie not in seen]
 
     predictions = [
-        (movie, round(svd_model.predict(user_id, movie).est, 2))
-        for movie in unseen
+        (movie, round(svd_model.predict(user_id, movie).est, 2)) for movie in unseen
     ]
 
     top_n = sorted(predictions, key=lambda x: x[1], reverse=True)[:top_n]
