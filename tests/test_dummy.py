@@ -22,10 +22,6 @@ from src.content_based_reco import get_nlp_content_based_recommendations
 # uncommented import when we will add more tests
 
 
-def test_basic_math():
-    assert 1 + 1 == 2
-
-
 # Ajouter le dossier parent au path
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "..")))
 
