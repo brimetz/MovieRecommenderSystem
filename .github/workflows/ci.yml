@@ -40,3 +40,13 @@ jobs:
 
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
+
+      - name: Start Streamlit
+        run: |
+        nohup streamlit run app.py --server.port 8501 &
+        sleep 5
+        curl --fail http://localhost:8501 || (echo "❌ Streamlit app did not start" && exit 1)
+
+      - name: Stop Streamlit
+        run: |
+          pkill -f "streamlit"
