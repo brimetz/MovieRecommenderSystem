@@ -27,6 +27,9 @@ jobs:
       - name: Install pip, numpy and cython
         run: |
           pip install --upgrade pip
+
+      - name: Install numpy and cython
+        run: |
           pip install "numpy<2"
           pip install cython
 
