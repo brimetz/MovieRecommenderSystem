@@ -35,7 +35,7 @@ jobs:
 
       - name: Install scikit-surprise
         run: |
-          pip install scikit-surprise==1.1.4
+          pip install --use-pep517 scikit-surprise==1.1.4
 
       - name: Install requirements-ci.txt
         run: |
