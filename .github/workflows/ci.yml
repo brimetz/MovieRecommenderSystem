@@ -24,7 +24,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential  
 
-      - name: Install pip, numpy and cython
+      - name: Install pip
         run: |
           pip install --upgrade pip
 
@@ -40,9 +40,6 @@ jobs:
       - name: Install requirements-ci.txt
         run: |
           pip install -r requirements-ci.txt
-
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/src" >> $GITHUB_ENV
 
       - name: Start Streamlit
         run: |
