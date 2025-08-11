@@ -18,7 +18,8 @@ def sample_data():
 
 
 def test_get_similar_movies_pearson_valid(sample_data):
-    result = cf.get_similar_movies_pearson("MovieA", user_movie_matrix=sample_data, min_common_ratings=1, top_n=2)
+    result = cf.get_similar_movies_pearson("MovieA", user_movie_matrix=sample_data,
+                                           min_common_ratings=1, top_n=2)
     assert "title" in result.columns
     assert not result.empty
 
@@ -29,7 +30,8 @@ def test_get_similar_movies_pearson_invalid(sample_data):
 
 
 def test_get_similar_movies_cosine_valid(sample_data):
-    result = cf.get_similar_movies_cosine("MovieA", user_movie_matrix= sample_data, min_common_ratings=1, top_n=2)
+    result = cf.get_similar_movies_cosine("MovieA", sample_data,
+                                          min_common_ratings=1, top_n=2)
     assert "title" in result.columns
     assert not result.empty
 
@@ -52,7 +54,8 @@ def test_predict_rating(sample_data):
 
 
 def test_predict_rating_fast(sample_data):
-    sim = pd.DataFrame(np.identity(4), index=sample_data.columns, columns=sample_data.columns)
+    sim = pd.DataFrame(np.identity(4), index=sample_data.columns,
+                       columns=sample_data.columns)
     rating = cf.predict_rating_fast("User1", "MovieA", sample_data, sim)
     assert np.isfinite(rating) or np.isnan(rating)
 
@@ -72,13 +75,15 @@ def test_predict_random_rating():
 
 
 def test_predict_rating_knn_item(sample_data):
-    sim = pd.DataFrame(np.identity(4), index=sample_data.columns, columns=sample_data.columns)
+    sim = pd.DataFrame(np.identity(4), index=sample_data.columns,
+                       columns=sample_data.columns)
     rating = cf.predict_rating_knn_item("User1", "MovieA", sample_data, sim)
     assert np.isfinite(rating) or np.isnan(rating)
 
 
 def test_predict_rating_knn_item_invalid(sample_data):
-    sim = pd.DataFrame(np.identity(4), index=sample_data.columns, columns=sample_data.columns)
+    sim = pd.DataFrame(np.identity(4), index=sample_data.columns,
+                       columns=sample_data.columns)
     assert np.isnan(cf.predict_rating_knn_item("User1", "Unknown", sample_data, sim))
 
 
@@ -93,13 +98,15 @@ def test_evaluate_model(sample_data):
 
 
 def test_get_top_n_recommendations_knn(sample_data):
-    sim = pd.DataFrame(np.identity(4), index=sample_data.columns, columns=sample_data.columns)
+    sim = pd.DataFrame(np.identity(4), index=sample_data.columns,
+                       columns=sample_data.columns)
     recs = cf.get_top_n_recommendations_knn("User1", sample_data, sim, k=1, N=2)
     assert "Film recommandé" in recs.columns
 
 
 def test_get_top_n_recommendations_knn_empty(sample_data):
-    sim = pd.DataFrame(np.identity(4), index=sample_data.columns, columns=sample_data.columns)
+    sim = pd.DataFrame(np.identity(4), index=sample_data.columns,
+                       columns=sample_data.columns)
     df = sample_data.copy()
     df.loc["User1"] = [5, 4, 3, 2]  # aucun film non vu
     recs = cf.get_top_n_recommendations_knn("User1", df, sim)

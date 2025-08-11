@@ -237,7 +237,8 @@ def get_top_n_recommendations_knn(
     recommendations = pd.DataFrame(
         recommendations, columns=["Film recommandé", column_name]
     )
-    recommendations[column_name] = pd.to_numeric(recommendations[column_name], errors="coerce")
+    recommendations[column_name] = pd.to_numeric(recommendations[column_name],
+                                                 errors="coerce")
     recommendations[column_name] = recommendations[column_name].round(2)
 
     return recommendations.head(N)
