@@ -146,19 +146,3 @@ def test_recommend_by_user_ratings():
         "Film A", user_movie_matrix.copy(), ratings_data, min_ratings=1, top_n=10
     )
     assert len(result_large_n) <= 2  # Seulement 2 autres films dispo
-
-
-@pytest.fixture
-def sample_data():
-    # Création d'un petit jeu de données
-    ratings = pd.DataFrame(
-        {
-            "user_id": [1, 1, 2, 2, 3, 3],
-            "title": ["Film A", "Film B", "Film A", "Film C", "Film B", "Film C"],
-            "rating": [5, 4, 4, 5, 3, 4],
-        }
-    )
-    user_movie_matrix = ratings.pivot_table(
-        index="user_id", columns="title", values="rating"
-    )
-    return ratings, user_movie_matrix
