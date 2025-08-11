@@ -1,4 +1,3 @@
-import pytest
 import pandas as pd
 import numpy as np
 from src.content_based_reco import (
@@ -18,7 +17,7 @@ def test_load_content_based_data(monkeypatch):
             "Crime", "Documentary", "Drama", "Fantasy", "Film-Noir", "Horror",
             "Musical", "Mystery", "Romance", "Sci-Fi", "Thriller", "War", "Western"
         ]
-        data = [[1, "Movie1"] + [""]*3 + [0]*19]
+        data = [[1, "Movie1"] + [""] * 3 + [0] * 19]
         return pd.DataFrame(data, columns=cols)
 
     monkeypatch.setattr(pd, "read_csv", mock_read_csv)
@@ -42,7 +41,8 @@ def test_get_nlp_content_based_recommendations():
     cosine_sim = np.identity(3)
 
     # Le film existe
-    res = get_nlp_content_based_recommendations("MovieA", cosine_sim, df_movies, top_n=2)
+    res = get_nlp_content_based_recommendations("MovieA", cosine_sim,
+                                                df_movies, top_n=2)
     assert isinstance(res, pd.DataFrame)
     assert "title" in res.columns
     assert "Score de similarité" in res.columns
@@ -52,7 +52,8 @@ def test_get_nlp_content_based_recommendations():
     assert len(res) <= 2
 
     # Le film n'existe pas -> df vide
-    res_empty = get_nlp_content_based_recommendations("FilmInexistant", cosine_sim, df_movies)
+    res_empty = get_nlp_content_based_recommendations("FilmInexistant",
+                                                      cosine_sim, df_movies)
     assert res_empty.empty
 
 
