@@ -2,5 +2,10 @@ coverage:
   status:
     project:
       default:
-        target: auto
+        target: 50% #overall coverage target
         informational: true
+
+comment:
+  require_base: false # yes means must have a base report to post
+  require_head: false # yes means must have a head report to post
+  show_critical_paths: true
