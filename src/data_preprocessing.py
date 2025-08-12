@@ -71,8 +71,6 @@ def load_data(movies_path="data/u.item", ratings_path="data/u.data"):
 
     density = compute_density(user_movie_matrix)
     sparsity = compute_sparsity(user_movie_matrix)
-    print(f"Taux de remplissage (density) : {density:.4f}")
-    print(f"Sparsité (sparsity) : {sparsity:.4f}")
 
     return movie_genres, ratings, user_movie_matrix, movies
 

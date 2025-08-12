@@ -48,8 +48,7 @@ N = st.sidebar.slider("Nombre de recommandations", min_value=1,
 # Charger les fichiers nécessaires
 df_nlp_movies = load_content_based_data()
 df_nlp_overviews = pd.read_csv("data/movie_overviews_sample.csv")
-print(df_nlp_movies.columns)
-print(df_nlp_overviews.columns)
+
 # Fusionner les deux datasets sur le titre
 df_nlp = merge_movies_overviews(df_nlp_movies, df_nlp_overviews)
 

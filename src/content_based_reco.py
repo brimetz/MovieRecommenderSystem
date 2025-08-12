@@ -31,7 +31,7 @@ def load_content_based_data(path="data/u.item"):
         "War",
         "Western",
     ]
-    print(movies_path)
+
     df_movies = pd.read_csv(
         movies_path, sep="|", encoding="latin-1", header=None, names=movie_columns
     )
@@ -124,7 +124,6 @@ def merge_movies_overviews(df_movies, overviews_df):
     # Fusionner les deux datasets sur le titre
     df = pd.merge(df_movies, overviews_df, on="title", how="left")
     df["overview"] = df["overview"].fillna("").astype(str)
-    print(df.columns)
     df["text_features"] = df.apply(combine_text_features, axis=1)
     df[["text_features"]].head()
     return df

@@ -3,6 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.10-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-v1.0-orange)
 ![Build](https://github.com/brimetz/MovieRecommenderSystem/actions/workflows/python-tests.yml/badge.svg)
+![Last Activity](https://img.shields.io/github/last-commit/brimetz/movierecommendersystem?label=Last%Activity&style=flat-square)
 [![Codecov](https://codecov.io/gh/brimetz/MovieRecommenderSystem/branch/main/graph/badge.svg?token=TOKEN)](https://codecov.io/gh/brimetz/MovieRecommenderSystem)
 ![Quality](https://github.com/brimetz/MovieRecommenderSystem/actions/workflows/quality.yml/badge.svg)
 
@@ -25,8 +26,6 @@ Designed to be a hands-on learning experience, it demonstrates key concepts in r
 ## 📁 Datas
 Use the MovieLens 100k dataset ('u.data' and 'u.item')
 https://grouplens.org/datasets/movielens/100k/
-
-
 
 ## 🛠 Installation
 ```bash
