@@ -68,10 +68,6 @@ def load_data(movies_path="data/u.item", ratings_path="data/u.data"):
     movie_genres = get_genre_matrix(movies)
     ratings = merge_ratings_with_titles(ratings, movies)
     user_movie_matrix = get_user_movie_matrix(ratings)
-
-    density = compute_density(user_movie_matrix)
-    sparsity = compute_sparsity(user_movie_matrix)
-
     return movie_genres, ratings, user_movie_matrix, movies
 
 
