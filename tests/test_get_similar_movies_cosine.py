@@ -16,10 +16,19 @@ def sample_user_movie_matrix():
     )
 
 
-def test_valid_case(sample_user_movie_matrix):
+@pytest.fixture
+def sample_movies():
+    # Mapping simple titres -> ids (1..4)
+    return pd.DataFrame(
+        {"movie_id": [1, 2, 3, 4], "title": ["Film A", "Film B", "Film C", "Film D"]}
+    )
+
+
+def test_valid_case(sample_user_movie_matrix, sample_movies):
     result = get_similar_movies_cosine(
         target_title="Film A",
         user_movie_matrix=sample_user_movie_matrix,
+        movies=sample_movies,
         min_common_ratings=1,
         top_n=2,
     )
@@ -31,43 +40,52 @@ def test_valid_case(sample_user_movie_matrix):
     assert len(result) <= 2
 
 
-def test_movie_not_in_matrix(sample_user_movie_matrix):
+def test_movie_not_in_matrix(sample_user_movie_matrix, sample_movies):
     result = get_similar_movies_cosine(
-        target_title="Film Z", user_movie_matrix=sample_user_movie_matrix
+        target_title="Film Z",
+        user_movie_matrix=sample_user_movie_matrix,
+        movies=sample_movies,
     )
     assert result.empty
     assert list(result.columns) == ["title", "similarity", "num_common_ratings"]
 
 
-def test_no_ratings_for_target(sample_user_movie_matrix):
+def test_no_ratings_for_target(sample_user_movie_matrix, sample_movies):
     matrix = sample_user_movie_matrix.copy()
     matrix["Film A"] = None
-    result = get_similar_movies_cosine(target_title="Film A", user_movie_matrix=matrix)
-    assert result.empty
-
-
-def test_no_common_ratings(sample_user_movie_matrix):
-    matrix = sample_user_movie_matrix.copy()
-    matrix.loc[:, ["Film B", "Film C", "Film D"]] = None
     result = get_similar_movies_cosine(
-        target_title="Film A", user_movie_matrix=matrix, min_common_ratings=2
+        target_title="Film A", user_movie_matrix=matrix, movies=sample_movies
     )
     assert result.empty
 
 
-def test_self_removed_from_results(sample_user_movie_matrix):
+def test_no_common_ratings(sample_user_movie_matrix, sample_movies):
+    matrix = sample_user_movie_matrix.copy()
+    matrix.loc[:, ["Film B", "Film C", "Film D"]] = None
+    result = get_similar_movies_cosine(
+        target_title="Film A",
+        user_movie_matrix=matrix,
+        movies=sample_movies,
+        min_common_ratings=2,
+    )
+    assert result.empty
+
+
+def test_self_removed_from_results(sample_user_movie_matrix, sample_movies):
     result = get_similar_movies_cosine(
         target_title="Film A",
         user_movie_matrix=sample_user_movie_matrix,
+        movies=sample_movies,
         min_common_ratings=1,
     )
     assert "Film A" not in result["title"].values
 
 
-def test_sorted_by_similarity(sample_user_movie_matrix):
+def test_sorted_by_similarity(sample_user_movie_matrix, sample_movies):
     result = get_similar_movies_cosine(
         target_title="Film A",
         user_movie_matrix=sample_user_movie_matrix,
+        movies=sample_movies,
         min_common_ratings=1,
     )
     assert all(

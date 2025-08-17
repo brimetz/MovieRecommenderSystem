@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -16,8 +17,15 @@ from src.svd_recommender import (
     get_top_n_recommendations_svd)
 from src.content_based_reco import (
     get_nlp_content_based_recommendations,
-    merge_movies_overviews,
-    load_content_based_data)
+    merge_movies_overviews)
+
+from src.sql_utils import (
+    get_movies,
+    get_ratings,
+    get_user_movie_matrix,
+    load_content_based_data_sql,
+    DB_PATH
+)
 
 
 st.set_page_config(page_title="Reco de Films", page_icon="🎬")
@@ -29,6 +37,9 @@ Recommande des films par **genres**, **notes d'utilisateurs** ou via **KNN**
 
 movie_genres, ratings, user_movie_matrix, movies = load_data()
 
+movies = get_movies()
+ratings = get_ratings()
+user_movie_matrix = get_user_movie_matrix()
 
 # Calcul matrice de similarité (item-item) —
 # can be done after the loading
@@ -37,6 +48,8 @@ similarity_matrix = compute_item_similarity_matrix(user_movie_matrix)
 # train the svd model
 svd_model = train_svd_model(ratings)
 
+
+# --- Streamlit Interface ---
 st.sidebar.markdown("### 🔧 Paramètres de la recommandation")
 
 k = st.sidebar.slider("Nombre de voisins (k for KNN)", min_value=1,
@@ -46,14 +59,14 @@ N = st.sidebar.slider("Nombre de recommandations", min_value=1,
 
 
 # Charger les fichiers nécessaires
-df_nlp_movies = load_content_based_data()
+df_nlp_movies = load_content_based_data_sql()
 df_nlp_overviews = pd.read_csv("data/movie_overviews_sample.csv")
 
 # Fusionner les deux datasets sur le titre
 df_nlp = merge_movies_overviews(df_nlp_movies, df_nlp_overviews)
 
 tfidf = TfidfVectorizer(stop_words="english")
-tfidf_matrix = tfidf.fit_transform(df_nlp["text_features"])
+tfidf_matrix = tfidf.fit_transform(df_nlp["genres"])
 
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
@@ -77,15 +90,15 @@ if mode == "KNN item-item" or mode == "SVD":
 if st.button("Recommander des films similaires"):
     if mode == "Content-Based (NLP)":
         reco = get_nlp_content_based_recommendations(film_title,
-                                                     cosine_sim, df_nlp)
+                                                     cosine_sim, df_nlp, N)
     elif mode == "Par genres":
         reco = recommend_similar_movies(film_title,
                                         movie_genres, GENRE_COLUMNS, N)
     elif mode == "Par utilisateurs (Pearson)":
         reco = recommend_by_user_ratings(film_title,
-                                         user_movie_matrix, ratings, 50, N)
+                                         user_movie_matrix, ratings, movies, 50, N)
     elif mode == "Par utilisateurs (Cosine)":
-        reco = get_similar_movies_cosine(film_title, user_movie_matrix, 10, N)
+        reco = get_similar_movies_cosine(film_title, user_movie_matrix, movies, 5, N)
     elif mode == "KNN item-item":
         if user_id is None:
             st.warning("Veuillez entrer un ID utilisateur valide pour KNN.")
@@ -93,7 +106,7 @@ if st.button("Recommander des films similaires"):
         else:
             reco = get_top_n_recommendations_knn(user_id,
                                                  user_movie_matrix,
-                                                 similarity_matrix, k, N)
+                                                 similarity_matrix, movies, k, N)
     elif mode == "SVD":
         reco = get_top_n_recommendations_svd(user_id, ratings, svd_model, N)
     else:

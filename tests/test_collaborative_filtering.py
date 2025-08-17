@@ -17,6 +17,14 @@ def sample_data():
     return df
 
 
+@pytest.fixture
+def sample_movies():
+    # Mapping simple titres -> ids (1..4)
+    return pd.DataFrame(
+        {"movie_id": [1, 2, 3, 4], "title": ["MovieA", "MovieB", "MovieC", "MovieD"]}
+    )
+
+
 def test_get_similar_movies_pearson_valid(sample_data):
     result = cf.get_similar_movies_pearson(
         "MovieA", user_movie_matrix=sample_data, min_common_ratings=1, top_n=2
@@ -30,23 +38,31 @@ def test_get_similar_movies_pearson_invalid(sample_data):
     assert result.empty
 
 
-def test_get_similar_movies_cosine_valid(sample_data):
+def test_get_similar_movies_cosine_valid(sample_data, sample_movies):
     result = cf.get_similar_movies_cosine(
-        "MovieA", sample_data, min_common_ratings=1, top_n=2
+        "MovieA", sample_data, sample_movies, min_common_ratings=1, top_n=2
     )
+    print(result.columns)
     assert "title" in result.columns
     assert not result.empty
 
 
-def test_get_similar_movies_cosine_no_ratings(sample_data):
+def test_get_similar_movies_cosine_no_ratings(sample_data, sample_movies):
     df = sample_data.copy()
     df["EmptyMovie"] = [np.nan, np.nan, np.nan, np.nan]
-    result = cf.get_similar_movies_cosine("EmptyMovie", df)
+    sample_movies = pd.DataFrame(
+        {
+            "movie_id": [1, 2, 3, 4, 5],
+            "title": ["MovieA", "MovieB", "MovieC", "MovieD", "EmptyMovie"],
+        }
+    )
+    result = cf.get_similar_movies_cosine("EmptyMovie", df, sample_movies)
+
     assert result.empty
 
 
-def test_get_similar_movies_cosine_invalid(sample_data):
-    result = cf.get_similar_movies_cosine("Unknown", sample_data)
+def test_get_similar_movies_cosine_invalid(sample_data, sample_movies):
+    result = cf.get_similar_movies_cosine("Unknown", sample_data, sample_movies)
     assert result.empty
 
 
@@ -104,19 +120,21 @@ def test_evaluate_model(sample_data):
     assert mae >= 0
 
 
-def test_get_top_n_recommendations_knn(sample_data):
+def test_get_top_n_recommendations_knn(sample_data, sample_movies):
     sim = pd.DataFrame(
         np.identity(4), index=sample_data.columns, columns=sample_data.columns
     )
-    recs = cf.get_top_n_recommendations_knn("User1", sample_data, sim, k=1, N=2)
+    recs = cf.get_top_n_recommendations_knn(
+        "User1", sample_data, sim, sample_movies, k=1, N=2
+    )
     assert "Film recommandé" in recs.columns
 
 
-def test_get_top_n_recommendations_knn_empty(sample_data):
+def test_get_top_n_recommendations_knn_empty(sample_data, sample_movies):
     sim = pd.DataFrame(
         np.identity(4), index=sample_data.columns, columns=sample_data.columns
     )
     df = sample_data.copy()
     df.loc["User1"] = [5, 4, 3, 2]  # aucun film non vu
-    recs = cf.get_top_n_recommendations_knn("User1", df, sim)
+    recs = cf.get_top_n_recommendations_knn("User1", df, sim, sample_movies)
     assert recs.empty

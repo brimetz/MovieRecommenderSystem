@@ -1,11 +1,35 @@
 import pandas as pd
 
 
-def load_content_based_data(path="data/u.item"):
+# Columnns of genres used
+GENRE_COLUMNS: list[str] = [
+    "unkown",
+    "Action",
+    "Adventure",
+    "Animation",
+    "Children's",
+    "Comedy",
+    "Crime",
+    "Documentary",
+    "Drama",
+    "Fantasy",
+    "Film-Noir",
+    "Horror",
+    "Musical",
+    "Mystery",
+    "Romance",
+    "Sci-Fi",
+    "Thriller",
+    "War",
+    "Western",
+]
+
+
+def load_content_based_data(path: str = "data/u.item") -> pd.DataFrame:
     movies_path = path
 
-    # Colonnes selon MovieLens 100k
-    movie_columns = [
+    # Columns of MovieLens 100k
+    movie_columns: list[str] = [
         "movie_id",
         "title",
         "release_date",
@@ -32,97 +56,73 @@ def load_content_based_data(path="data/u.item"):
         "Western",
     ]
 
-    df_movies = pd.read_csv(
+    df_movies: pd.DataFrame = pd.read_csv(
         movies_path, sep="|", encoding="latin-1", header=None, names=movie_columns
     )
 
-    # 🧠 Création d'une colonne "genres" textuelle
-    def combine_genres(row):
+    # Create a text column "genres"
+    def combine_genres(row: pd.Series) -> str:
         return " ".join([genre for genre in genre_cols if row[genre] == 1])
 
-    genre_cols = movie_columns[5:]  # genres
+    genre_cols: list[str] = movie_columns[5:]  # genres
 
     df_movies["genres"] = df_movies.apply(combine_genres, axis=1)
 
-    # Garder uniquement les colonnes utiles
+    # Keep only usefull columns
     df_movies = df_movies[["movie_id", "title", "genres"]]
     return df_movies
 
 
 def get_nlp_content_based_recommendations(
-    movie_title, cosine_sim_matrix, df_movies, top_n=10
-):
-    # Normaliser les titres pour la comparaison
-    movie_title_norm = movie_title.strip().lower()
+    movie_title: str, cosine_sim_matrix, df_movies: pd.DataFrame, top_n: int = 10
+) -> pd.DataFrame:
+    # Normalize title for comparison
+    movie_title_norm: str = movie_title.strip().lower()
     df_movies["title_norm"] = df_movies["title"].str.strip().str.lower()
 
-    # Vérifier que le film existe
+    # Verify that movie_title exist
     if movie_title_norm not in df_movies["title_norm"].values:
-        print(f"Film '{movie_title}' non trouvé.")
+        print(f"Movie '{movie_title}' not found.")
         return pd.DataFrame()
 
-    # Obtenir l'index du film demandé
-    idx = df_movies[df_movies["title_norm"] == movie_title_norm].index[0]
+    # Get index of movie_title
+    idx: int = df_movies[df_movies["title_norm"] == movie_title_norm].index[0]
 
-    # Récupérer les scores de similarité
-    sim_scores = list(enumerate(cosine_sim_matrix[idx]))
+    # Get similarity scores
+    sim_scores: list = list(enumerate(cosine_sim_matrix[idx]))
 
-    # Trier les films par score décroissant
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    # Sorting movies
+    sim_scores: list = sorted(sim_scores, key=lambda x: x[1], reverse=True)
 
-    # Ignorer le premier (le film lui-même), prendre top_n suivants
-    sim_scores = sim_scores[1 : top_n + 1]
+    # Ignore first because it is the chosen movie
+    sim_scores: list = sim_scores[1 : top_n + 1]
 
-    # Récupérer les indices des films similaires
-    movie_indices = [i for i, _ in sim_scores]
+    # Get indices of similar movies
+    movie_indices: list[int] = [i for i, _ in sim_scores]
 
-    # Renvoyer le DataFrame avec les titres et les scores
-    results = df_movies.iloc[movie_indices][["title"]].copy()
+    # return Dataframe with title and similarity score
+    results: pd.DataFrame = df_movies.iloc[movie_indices][["title"]].copy()
     results["Score de similarité"] = [round(score, 2) for _, score in sim_scores]
 
     return results.reset_index(drop=True)
 
 
-# Colonnes selon MovieLens 100k
-genre_cols = [
-    "unknown",
-    "Action",
-    "Adventure",
-    "Animation",
-    "Children's",
-    "Comedy",
-    "Crime",
-    "Documentary",
-    "Drama",
-    "Fantasy",
-    "Film-Noir",
-    "Horror",
-    "Musical",
-    "Mystery",
-    "Romance",
-    "Sci-Fi",
-    "Thriller",
-    "War",
-    "Western",
-]
+def combine_text_features(row: pd.Series) -> str:
+    genres: list = [genre for genre in GENRE_COLUMNS if row.get(genre, 0) == 1]
 
+    # Base : title + genres
+    base: str = f"{row['title']} {' '.join(genres)}"
 
-def combine_text_features(row):
-    genres = [genre for genre in genre_cols if row.get(genre, 0) == 1]
-
-    # Base : titre + genres
-    base = f"{row['title']} {' '.join(genres)}"
-
-    # Ajout du résumé s’il existe
+    # Add an overview if it exist
     if pd.notna(row["overview"]) and row["overview"].strip() != "":
         return f"{base} {row['overview']}"
     else:
         return base
 
 
-def merge_movies_overviews(df_movies, overviews_df):
-    # Fusionner les deux datasets sur le titre
-    df = pd.merge(df_movies, overviews_df, on="title", how="left")
+def merge_movies_overviews(df_movies, overviews_df) -> pd.DataFrame:
+    # Megre both DataFrame by the title
+    df: pd.DataFrame = pd.merge(df_movies, overviews_df, on="title", how="left")
     df["overview"] = df["overview"].fillna("").astype(str)
     df["text_features"] = df.apply(combine_text_features, axis=1)
     df[["text_features"]].head()

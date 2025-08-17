@@ -2,6 +2,7 @@ import sys
 import os
 import pandas as pd
 import numpy as np
+import pytest
 
 from src.reco import recommend_similar_movies, recommend_by_user_ratings
 from src.svd_recommender import train_svd_model, get_top_n_recommendations_svd
@@ -10,6 +11,14 @@ from src.content_based_reco import get_nlp_content_based_recommendations
 
 # Ajouter le dossier parent au path
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "..")))
+
+
+@pytest.fixture
+def sample_movies():
+    # Mapping simple titres -> ids (1..4)
+    return pd.DataFrame(
+        {"movie_id": [1, 2, 3], "title": ["Film A", "Film B", "Film C"]}
+    )
 
 
 def test_content_recommendation():
@@ -95,24 +104,29 @@ def test_recommend_similar_movies():
     assert result_one.empty
 
 
-def test_recommend_by_user_ratings():
+def test_recommend_by_user_ratings(sample_movies):
     # Jeu de données minimal : 3 films, 3 utilisateurs
     ratings_data = pd.DataFrame(
         {
             "userId": [1, 1, 2, 2, 3, 3],
-            "title": ["Film A", "Film B", "Film A", "Film C", "Film B", "Film C"],
+            "movie_id": [1, 2, 1, 3, 2, 3],
             "rating": [5, 4, 4, 5, 3, 4],
         }
     )
 
     # Matrice utilisateur-film
     user_movie_matrix = ratings_data.pivot_table(
-        index="userId", columns="title", values="rating"
+        index="userId", columns="movie_id", values="rating"
     )
 
     # ---- Cas normal ----
     result = recommend_by_user_ratings(
-        "Film A", user_movie_matrix.copy(), ratings_data, min_ratings=1, top_n=2
+        "Film A",
+        user_movie_matrix.copy(),
+        ratings_data,
+        sample_movies,
+        min_ratings=1,
+        top_n=2,
     )
     assert not result.empty
     assert "title" in result.columns or result.columns[0] == "title"
@@ -124,19 +138,26 @@ def test_recommend_by_user_ratings():
     # ---- Cas titre inexistant dans la matrice ----
     # Ici, on doit vérifier qu'un KeyError peut survenir
     try:
-        recommend_by_user_ratings("Film X", user_movie_matrix.copy(), ratings_data)
+        recommend_by_user_ratings(
+            "Film X", user_movie_matrix.copy(), ratings_data, sample_movies
+        )
         assert False, "Un KeyError aurait dû être levé"
     except KeyError:
         pass  # comportement attendu
 
     # ---- Cas min_ratings élevé (aucun film ne passe le filtre) ----
     result_empty = recommend_by_user_ratings(
-        "Film A", user_movie_matrix.copy(), ratings_data, min_ratings=10
+        "Film A", user_movie_matrix.copy(), ratings_data, sample_movies, min_ratings=10
     )
     assert result_empty.empty
 
     # ---- Cas top_n plus grand que disponible ----
     result_large_n = recommend_by_user_ratings(
-        "Film A", user_movie_matrix.copy(), ratings_data, min_ratings=1, top_n=10
+        "Film A",
+        user_movie_matrix.copy(),
+        ratings_data,
+        sample_movies,
+        min_ratings=1,
+        top_n=10,
     )
     assert len(result_large_n) <= 2  # Seulement 2 autres films dispo
