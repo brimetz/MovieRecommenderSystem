@@ -55,29 +55,24 @@ def test_get_nlp_content_based_recommendations():
     # Jeu de données minimal
     df_movies = pd.DataFrame(
         {
-            "title": ["MovieA", "MovieB", "MovieC"],
-            "title_norm": ["moviea", "movieb", "moviec"],
+            "movie_id": [1, 2, 3],
         }
     )
     # Matrice identité 3x3 (similarité parfaite avec soi-même)
     cosine_sim = np.identity(3)
 
     # Le film existe
-    res = get_nlp_content_based_recommendations(
-        "MovieA", cosine_sim, df_movies, top_n=2
-    )
+    res = get_nlp_content_based_recommendations(1, cosine_sim, df_movies, top_n=2)
     assert isinstance(res, pd.DataFrame)
-    assert "title" in res.columns
+    assert "movie_id" in res.columns
     assert "Score de similarité" in res.columns
     # Ne doit pas contenir le film lui-même
-    assert "MovieA" not in res["title"].values
+    assert 1 not in res["movie_id"].values
     # Résultat limité à top_n
     assert len(res) <= 2
 
     # Le film n'existe pas -> df vide
-    res_empty = get_nlp_content_based_recommendations(
-        "FilmInexistant", cosine_sim, df_movies
-    )
+    res_empty = get_nlp_content_based_recommendations("99", cosine_sim, df_movies)
     assert res_empty.empty
 
 
@@ -119,10 +114,15 @@ def test_merge_movies_overviews():
         }
     )
     df_overviews = pd.DataFrame(
-        {"title": ["MovieA", "MovieB"], "overview": ["Story A", None]}
+        {
+            "movie_id": [1, 2],
+            "title": ["MovieA", "MovieB"],
+            "overview": ["Story A", None],
+        }
     )
 
     merged = merge_movies_overviews(df_movies, df_overviews)
+    print(merged.columns)
     assert "text_features" in merged.columns
     # "overview" doit être string même si None initialement
     assert merged.loc[1, "overview"] == ""

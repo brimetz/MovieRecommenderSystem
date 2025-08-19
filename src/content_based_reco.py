@@ -74,19 +74,15 @@ def load_content_based_data(path: str = "data/u.item") -> pd.DataFrame:
 
 
 def get_nlp_content_based_recommendations(
-    movie_title: str, cosine_sim_matrix, df_movies: pd.DataFrame, top_n: int = 10
+    movie_id: int, cosine_sim_matrix, df_movies: pd.DataFrame, top_n: int = 10
 ) -> pd.DataFrame:
-    # Normalize title for comparison
-    movie_title_norm: str = movie_title.strip().lower()
-    df_movies["title_norm"] = df_movies["title"].str.strip().str.lower()
-
     # Verify that movie_title exist
-    if movie_title_norm not in df_movies["title_norm"].values:
-        print(f"Movie '{movie_title}' not found.")
+    if movie_id not in df_movies["movie_id"].values:
+        print(f"Movie '{movie_id}' not found.")
         return pd.DataFrame()
 
-    # Get index of movie_title
-    idx: int = df_movies[df_movies["title_norm"] == movie_title_norm].index[0]
+    # Get index of movie_id
+    idx: int = df_movies[df_movies["movie_id"] == movie_id].index[0]
 
     # Get similarity scores
     sim_scores: list = list(enumerate(cosine_sim_matrix[idx]))
@@ -100,8 +96,8 @@ def get_nlp_content_based_recommendations(
     # Get indices of similar movies
     movie_indices: list[int] = [i for i, _ in sim_scores]
 
-    # return Dataframe with title and similarity score
-    results: pd.DataFrame = df_movies.iloc[movie_indices][["title"]].copy()
+    # return Dataframe with movie_id and similarity score
+    results: pd.DataFrame = df_movies.iloc[movie_indices][["movie_id"]].copy()
     results["Score de similarité"] = [round(score, 2) for _, score in sim_scores]
 
     return results.reset_index(drop=True)
@@ -122,7 +118,9 @@ def combine_text_features(row: pd.Series) -> str:
 
 def merge_movies_overviews(df_movies, overviews_df) -> pd.DataFrame:
     # Megre both DataFrame by the title
-    df: pd.DataFrame = pd.merge(df_movies, overviews_df, on="title", how="left")
+    df: pd.DataFrame = pd.merge(
+        df_movies, overviews_df, on=["movie_id", "title"], how="left"
+    )
     df["overview"] = df["overview"].fillna("").astype(str)
     df["text_features"] = df.apply(combine_text_features, axis=1)
     df[["text_features"]].head()

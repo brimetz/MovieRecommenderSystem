@@ -51,15 +51,14 @@ def test_get_user_movie_matrix(sample_ratings_df, sample_movies_df):
     merged = dp.merge_ratings_with_titles(sample_ratings_df, sample_movies_df)
     user_movie_matrix = dp.get_user_movie_matrix(merged)
     assert isinstance(user_movie_matrix, pd.DataFrame)
-    assert 1 in user_movie_matrix.index
-    assert "Film A" in user_movie_matrix.columns
+    assert 1 in user_movie_matrix.columns
 
 
 def test_compute_density_and_sparsity():
     df = pd.DataFrame(
         {
-            "Film A": [5, None],
-            "Film B": [None, 3],
+            1: [5, None],
+            2: [None, 3],
         },
         index=[1, 2],
     )

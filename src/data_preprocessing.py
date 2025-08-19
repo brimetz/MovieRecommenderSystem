@@ -60,7 +60,7 @@ def merge_ratings_with_titles(
 
 @st.cache_data
 def get_user_movie_matrix(ratings_df: pd.DataFrame) -> pd.DataFrame:
-    return ratings_df.pivot_table(index="user_id", columns="title", values="rating")
+    return ratings_df.pivot_table(index="user_id", columns="movie_id", values="rating")
 
 
 @st.cache_data

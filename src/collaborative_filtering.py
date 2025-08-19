@@ -7,17 +7,17 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 
 def get_similar_movies_pearson(
-    target_title: str,
+    target_id: int,
     user_movie_matrix: pd.DataFrame,
     min_common_ratings: int = 10,
     top_n: int = 10,
 ) -> pd.DataFrame:
     """
-    will recommend movie similar to `target_title`
+    will recommend movie similar to `target_id`
     using the pearson correlation
 
     Args:
-        target_title (string): movie choose by the user
+        target_id (int): movie choose by the user
         user_movie_matrix (panda dataframe): Matrix Users x movies
         min_common_ratings (integer): minimal threshold of shared ratings
         top_n (integer): number of movies to recommend
@@ -25,11 +25,11 @@ def get_similar_movies_pearson(
     Returns:
         panda dataframe: movie array with their correlation scoring
     """
-    if target_title not in user_movie_matrix.columns:
-        return pd.DataFrame(columns=["title", "correlation", "num_common_ratings"])
+    if target_id not in user_movie_matrix.columns:
+        return pd.DataFrame(columns=["movie_id", "correlation", "num_common_ratings"])
 
     # scoring vectors for the target movie
-    target_ratings: pd.Series[int] = user_movie_matrix[target_title]
+    target_ratings: pd.Series[int] = user_movie_matrix[target_id]
 
     # correlation compute with other movies
     correlations: pd.Series[float] = user_movie_matrix.corrwith(target_ratings)
@@ -47,29 +47,28 @@ def get_similar_movies_pearson(
     corr_df = corr_df[corr_df["num_common_ratings"] >= min_common_ratings].copy()
 
     # delete target movie from the result dataframe
-    if target_title in corr_df.index:
-        corr_df = corr_df.drop(index=target_title)
+    if target_id in corr_df.index:
+        corr_df = corr_df.drop(index=target_id)
 
     # filters and rename
     corr_df = corr_df.sort_values(by="correlation", ascending=False)
     corr_df.reset_index(inplace=True)
-    corr_df.rename(columns={"index": "title"}, inplace=True)
+    corr_df.rename(columns={"index": "movie_id"}, inplace=True)
 
     return corr_df.head(top_n)
 
 
 def get_similar_movies_cosine(
-    target_title: str,
+    target_id: int,
     user_movie_matrix: pd.DataFrame,
-    movies: pd.DataFrame,
     min_common_ratings: int = 10,
     top_n: int = 10,
 ) -> pd.DataFrame:
     """
-    Recommand similar movies of 'target_title' using the cosine similarity
+    Recommand similar movies of 'target_id' using the cosine similarity
 
     Args:
-        target_title (string): movie chosen by the user
+        target_id (int): movie chosen by the user
         user_movie_matrix (panda dataframe): Users x movies matrix
         min_common_ratings (integer): minimal numbers of shared ratings
         top_n (integer): number of movie to return
@@ -77,27 +76,18 @@ def get_similar_movies_cosine(
     Returns:
         pd.Dataframe: movie array with similarity score
     """
-    title_to_id: dict = dict(zip(movies["title"], movies["movie_id"]))
-    id_to_title: dict = dict(zip(movies["movie_id"], movies["title"]))
-
-    movie_id: int = title_to_id.get(target_title)
-
-    if movie_id is None:
-        return pd.DataFrame(columns=["title", "similarity", "num_common_ratings"])
-
-    # Map columns (titles -> ids)
-    matrix_ids: pd.DataFrame = user_movie_matrix.copy()
-    matrix_ids.columns = [title_to_id.get(col, col) for col in matrix_ids.columns]
+    if target_id is None:
+        return pd.DataFrame(columns=["movie_id", "similarity", "num_common_ratings"])
 
     # If the movie is not in the matrix
-    if movie_id not in matrix_ids.columns:
-        return pd.DataFrame(columns=["title", "similarity", "num_common_ratings"])
+    if target_id not in user_movie_matrix.columns:
+        return pd.DataFrame(columns=["movie_id", "similarity", "num_common_ratings"])
 
     # Transpose movie matrix
-    movie_matrix: pd.DataFrame = matrix_ids.T
+    movie_matrix: pd.DataFrame = user_movie_matrix.T
 
-    if movie_matrix.loc[movie_id].isna().all():
-        return pd.DataFrame(columns=["title", "similarity", "num_common_ratings"])
+    if movie_matrix.loc[target_id].isna().all():
+        return pd.DataFrame(columns=["movie_id", "similarity", "num_common_ratings"])
 
     # replace NaN value by O
     filled: pd.DataFrame = movie_matrix.fillna(0)
@@ -107,13 +97,13 @@ def get_similar_movies_cosine(
     )
 
     # remove the movie target
-    sim_scores: pd.DataFrame = sim_df[movie_id].drop(movie_id)
+    sim_scores: pd.DataFrame = sim_df[target_id].drop(target_id)
 
     # Compute shared ratings with other movies
-    target_ratings: pd.Series[int] = movie_matrix.loc[movie_id]
+    target_ratings: pd.Series[int] = movie_matrix.loc[target_id]
     num_common: int = movie_matrix.apply(
         lambda x: (target_ratings.notna() & x.notna()).sum(), axis=1
-    ).drop(movie_id)
+    ).drop(target_id)
 
     # join each array to be sure to have the same number of element
     result: pd.DataFrame = pd.DataFrame(
@@ -124,18 +114,14 @@ def get_similar_movies_cosine(
     result: pd.DataFrame = result[result["num_common_ratings"] >= min_common_ratings]
     result: pd.DataFrame = result.sort_values(by="similarity", ascending=False)
 
-    # map movie_id to title
     result: pd.DataFrame = result.reset_index().rename(columns={"index": "movie_id"})
-    result["title"] = result["movie_id"].map(id_to_title)
 
-    return result[["title", "similarity", "num_common_ratings"]].head(top_n)
+    return result[["movie_id", "similarity", "num_common_ratings"]].head(top_n)
 
 
-def predict_rating(
-    user_id: int, movie_title: str, ratings_matrix: pd.DataFrame
-) -> float:
+def predict_rating(user_id: int, movie_id: int, ratings_matrix: pd.DataFrame) -> float:
     # Get movie ratings
-    target_movie_ratings: pd.Series[int] = ratings_matrix[movie_title]
+    target_movie_ratings: pd.Series[int] = ratings_matrix[movie_id]
 
     # Compute correlation with other movies
     movie_corr: pd.Series[float] = ratings_matrix.corrwith(target_movie_ratings)
@@ -157,11 +143,11 @@ def predict_rating(
 
 def predict_rating_fast(
     user_id: int,
-    movie_title: str,
+    movie_id: int,
     ratings_matrix: pd.DataFrame,
     similarity_matrix: pd.DataFrame,
 ) -> float:
-    if movie_title not in similarity_matrix.columns:
+    if movie_id not in similarity_matrix.columns:
         return np.nan
 
     # user ratings
@@ -169,7 +155,7 @@ def predict_rating_fast(
 
     # Similaries between target movie and movies rated by the user
     similarities: pd.DataFrame = similarity_matrix.loc[
-        movie_title, user_ratings.index
+        movie_id, user_ratings.index
     ].dropna()
 
     # same filtering of movies rating + similar movies
@@ -183,10 +169,10 @@ def predict_rating_fast(
     return numerator / denominator
 
 
-def predict_mean_rating(movie_title: str, train_matrix: pd.DataFrame) -> float:
-    if movie_title not in train_matrix.columns:
+def predict_mean_rating(movie_id: int, train_matrix: pd.DataFrame) -> float:
+    if movie_id not in train_matrix.columns:
         return np.nan
-    return train_matrix[movie_title].mean()
+    return train_matrix[movie_id].mean()
 
 
 def predict_random_rating(min: int = 1, max: int = 5) -> float:
@@ -195,18 +181,16 @@ def predict_random_rating(min: int = 1, max: int = 5) -> float:
 
 def predict_rating_knn_item(
     user_id: int,
-    movie_title: str,
+    movie_id: int,
     ratings_matrix: pd.DataFrame,
     similarity_matrix: pd.DataFrame,
     k: int = 5,
 ) -> float:
-    if movie_title not in similarity_matrix.columns:
+    if movie_id not in similarity_matrix.columns:
         return np.nan
 
     # Similar movies sorted by similarities (except target movie)
-    similar_movies: pd.DataFrame = (
-        similarity_matrix[movie_title].drop(movie_title).dropna()
-    )
+    similar_movies: pd.DataFrame = similarity_matrix[movie_id].drop(movie_id).dropna()
     similar_movies: pd.DataFrame = similar_movies.sort_values(ascending=False)
 
     # Movies that user has rated
@@ -241,9 +225,9 @@ def evaluate_model(
 
     for _, row in test_df.iterrows():
         user_id: int = row["user_id"]
-        title: str = row["title"]
+        movie_id: str = row["movie_id"]
         true_rating: float = row["rating"]
-        pred_rating: float = predict_fn(user_id, title, train_matrix)
+        pred_rating: float = predict_fn(user_id, movie_id, train_matrix)
 
         if not np.isnan(pred_rating):
             y_true.append(true_rating)
@@ -260,7 +244,6 @@ def get_top_n_recommendations_knn(
     user_id: int,
     ratings_matrix: pd.DataFrame,
     similarity_matrix: pd.DataFrame,
-    movies: pd.DataFrame,
     k: int = 5,
     N: int = 10,
 ) -> pd.DataFrame:
@@ -285,15 +268,6 @@ def get_top_n_recommendations_knn(
     recommendations: pd.DataFrame = pd.DataFrame(
         recommendations, columns=["movie_id", column_name]
     )
-
-    # Mapping movie_id → title
-    recommendations: pd.DataFrame = recommendations.merge(
-        movies, how="left", left_on="movie_id", right_on="movie_id"
-    )
-
-    # Rename columns
-    recommendations: pd.DataFrame = recommendations[["title", column_name]]
-    recommendations.rename(columns={"title": "Film recommandé"}, inplace=True)
 
     recommendations[column_name] = pd.to_numeric(
         recommendations[column_name], errors="coerce"

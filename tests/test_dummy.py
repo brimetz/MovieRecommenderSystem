@@ -24,15 +24,12 @@ def sample_movies():
 def test_content_recommendation():
     df = pd.DataFrame(
         {
-            "title": ["Toy Story (1995)", "Jumanji (1995)"],
-            "title_norm": ["toy story (1995)", "jumanji (1995)"],
+            "movie_id": [1, 2],
             "text_features": ["toy story adventure", "jumanji adventure"],
         }
     )
     matrix = np.identity(2)
-    result = get_nlp_content_based_recommendations(
-        "Toy Story (1995)", matrix, df, top_n=1
-    )
+    result = get_nlp_content_based_recommendations(1, matrix, df, top_n=1)
     assert len(result) == 1
 
 
@@ -68,7 +65,7 @@ def test_get_recommendations():
 def test_recommend_similar_movies():
     # Jeu de données minimal
     data = {
-        "title": ["Film A", "Film B", "Film C"],
+        "movie_id": [1, 2, 3],
         "Action": [1, 0, 1],
         "Comedy": [0, 1, 1],
     }
@@ -76,31 +73,27 @@ def test_recommend_similar_movies():
     genre_columns = ["Action", "Comedy"]
 
     # ---- Cas normal ----
-    result = recommend_similar_movies(
-        "Film A", movie_genres.copy(), genre_columns, top_n=2
-    )
+    result = recommend_similar_movies(1, movie_genres.copy(), genre_columns, top_n=2)
     assert not result.empty
     assert len(result) <= 2
-    assert "title" in result.columns
+    assert "movie_id" in result.columns
     assert "similarity" in result.columns
-    assert all(result["title"] != "Film A")  # ne recommande pas le même film
+    assert all(result["movie_id"] != 1)  # ne recommande pas le même film
 
     # ---- Cas titre inexistant ----
-    result_empty = recommend_similar_movies(
-        "Film X", movie_genres.copy(), genre_columns
-    )
+    result_empty = recommend_similar_movies(99, movie_genres.copy(), genre_columns)
     assert isinstance(result_empty, pd.DataFrame)
     assert result_empty.empty
 
     # ---- Cas top_n plus grand que dataset ----
     result_large_n = recommend_similar_movies(
-        "Film A", movie_genres.copy(), genre_columns, top_n=10
+        1, movie_genres.copy(), genre_columns, top_n=10
     )
     assert len(result_large_n) <= 2  # Seulement 2 autres films dispo
 
     # ---- Cas un seul film dans le dataset ----
-    one_film_df = pd.DataFrame({"title": ["Film A"], "Action": [1], "Comedy": [0]})
-    result_one = recommend_similar_movies("Film A", one_film_df.copy(), genre_columns)
+    one_film_df = pd.DataFrame({"movie_id": [1], "Action": [1], "Comedy": [0]})
+    result_one = recommend_similar_movies(1, one_film_df.copy(), genre_columns)
     assert result_one.empty
 
 
@@ -121,7 +114,7 @@ def test_recommend_by_user_ratings(sample_movies):
 
     # ---- Cas normal ----
     result = recommend_by_user_ratings(
-        "Film A",
+        1,
         user_movie_matrix.copy(),
         ratings_data,
         sample_movies,
@@ -129,31 +122,31 @@ def test_recommend_by_user_ratings(sample_movies):
         top_n=2,
     )
     assert not result.empty
-    assert "title" in result.columns or result.columns[0] == "title"
+    assert "movie_id" in result.columns or result.columns[0] == "movie_id"
     assert "correlation" in result.columns
     assert "num_ratings" in result.columns
     assert all(result["num_ratings"] >= 1)
-    assert all(result["title"] != "Film A")
+    assert all(result["movie_id"] != 1)
 
     # ---- Cas titre inexistant dans la matrice ----
     # Ici, on doit vérifier qu'un KeyError peut survenir
     try:
         recommend_by_user_ratings(
-            "Film X", user_movie_matrix.copy(), ratings_data, sample_movies
+            99, user_movie_matrix.copy(), ratings_data, sample_movies
         )
-        assert False, "Un KeyError aurait dû être levé"
-    except KeyError:
+        assert False, "Un ValueError aurait dû être levé"
+    except ValueError:
         pass  # comportement attendu
 
     # ---- Cas min_ratings élevé (aucun film ne passe le filtre) ----
     result_empty = recommend_by_user_ratings(
-        "Film A", user_movie_matrix.copy(), ratings_data, sample_movies, min_ratings=10
+        1, user_movie_matrix.copy(), ratings_data, sample_movies, min_ratings=10
     )
     assert result_empty.empty
 
     # ---- Cas top_n plus grand que disponible ----
     result_large_n = recommend_by_user_ratings(
-        "Film A",
+        1,
         user_movie_matrix.copy(),
         ratings_data,
         sample_movies,

@@ -98,18 +98,18 @@ def collaborative_recommendations(user_id: int, n_neighbors=5) -> list[int]:
     return similar_users.tolist()
 
 
-def content_recommendations(movie_title: str, top_n: int = 5) -> list[str]:
+def content_recommendations(movie_id: int, top_n: int = 5) -> list[str]:
     conn: sqlite3.Connection = sqlite3.connect(DB_PATH)
     movies_df: pd.DataFrame = pd.read_sql_query("SELECT * FROM movies", conn)
     conn.close()
 
-    fav_movie: pd.DataFrame = movies_df[movies_df["title"] == movie_title]
+    fav_movie: pd.DataFrame = movies_df[movies_df["movie_id"] == movie_id]
     fav_vector: np.ndarray = fav_movie.iloc[:, 5:].values  # colonnes genre_0 à genre_18
     similarities: np.ndarray = cosine_similarity(
         fav_vector, movies_df.iloc[:, 5:].values
     )
     similar_indices: np.ndarray = similarities[0].argsort()[::-1][1 : top_n + 1]
-    return movies_df.iloc[similar_indices]["title"].tolist()
+    return movies_df.iloc[similar_indices]["movie_id"].tolist()
 
 
 def load_content_based_data_sql() -> pd.DataFrame:
